@@ -187,7 +187,6 @@ Inkscape, which must be on the path for this script to work.
         dom1 = parse(self.svgfilename)
         #pprint.pprint(dom1)
         ele_g = dom1.getElementsByTagName("g")[0]
-        self.g_trans_x, self.g_trans_y = (0.0, 0.0)
 
         ele_svg = dom1.getElementsByTagName("svg")[0]
         pgheight = ele_svg.attributes["height"].value
@@ -204,15 +203,12 @@ Inkscape, which must be on the path for this script to work.
 
         # TODO, remove the g_trans var from global scope.
         for node in dom1.getElementsByTagName("flowRoot"):
-            if node.parentNode.hasAttribute("transform"):
-                self.g_trans_x, self.g_trans_y = self.get_global_trans(node.parentNode.attributes["transform"].value)
+            g_trans_x, g_trans_y = self.get_g_trans(node)
             latexstr += "\n"
-            latexstr += self.process_flow(node, pgwidth, pgheight, self.g_trans_x, self.g_trans_y)
+            latexstr += self.process_flow(node, pgwidth, pgheight, g_trans_x, g_trans_y)
             latexstr += "\n"
         for node in dom1.getElementsByTagName("text"):
             g_trans_x, g_trans_y = self.get_g_trans(node)
-            #if node.parentNode.hasAttribute("transform"):
-            #    self.g_trans_x, self.g_trans_y = self.get_global_trans(node.parentNode.attributes["transform"].value)
             latexstr += "\n"
             latexstr += self.process_text(node, pgwidth, pgheight, g_trans_x, g_trans_y)
             latexstr += "\n"
@@ -234,19 +230,6 @@ Inkscape, which must be on the path for this script to work.
                 x_trans += tmp_x
                 y_trans += tmp_y
             node = node.parentNode
-
-        #while node.hasAttribute("transform") == False:
-        #    print "no transform, getting parent...\n"
-        #    node = node.parentNode
-        #    if node.nodeType == Node.DOCUMENT_NODE:
-        #        print "at the root "
-        #        #pprint.pprint(node.toxml())
-        #        return x_trans, y_trans
-
-        #trans_str = node.attributes["transform"].value;
-        #tmp_str = trans_str.lstrip("translate(")
-        #tmp_str = tmp_str.rstrip(")")
-        #return map(lambda x: float(x), tmp_str.split(","))
         return x_trans, y_trans
 
     def get_trans(self, trans_str):
