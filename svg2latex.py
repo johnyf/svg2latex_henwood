@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import string
 
 from optparse import OptionParser
-from xml.dom.minidom import parse, parseString
+from xml.dom.minidom import parse, parseString, Node
 from string import Template
 
 import pprint
@@ -210,10 +210,11 @@ Inkscape, which must be on the path for this script to work.
             latexstr += self.process_flow(node, pgwidth, pgheight, self.g_trans_x, self.g_trans_y)
             latexstr += "\n"
         for node in dom1.getElementsByTagName("text"):
-            if node.parentNode.hasAttribute("transform"):
-                self.g_trans_x, self.g_trans_y = self.get_global_trans(node.parentNode.attributes["transform"].value)
+            g_trans_x, g_trans_y = self.get_g_trans(node)
+            #if node.parentNode.hasAttribute("transform"):
+            #    self.g_trans_x, self.g_trans_y = self.get_global_trans(node.parentNode.attributes["transform"].value)
             latexstr += "\n"
-            latexstr += self.process_text(node, pgwidth, pgheight, self.g_trans_x, self.g_trans_y)
+            latexstr += self.process_text(node, pgwidth, pgheight, g_trans_x, g_trans_y)
             latexstr += "\n"
         latexstr += " \\end{picture}\n"
         latexstr += "\\endgroup\n"
@@ -222,6 +223,43 @@ Inkscape, which must be on the path for this script to work.
         FILE.close()
 
 #####################################################################
+    def get_g_trans(self, node):
+        #pprint.pprint(node.toxml())
+        x_trans, y_trans = (0, 0)
+        while not node.nodeType == Node.DOCUMENT_NODE:
+            if node.hasAttribute("transform") == True:
+                #print "found transform..."
+                trans_str = node.attributes["transform"].value;
+                tmp_x, tmp_y = self.get_trans(trans_str)
+                x_trans += tmp_x
+                y_trans += tmp_y
+            node = node.parentNode
+
+        #while node.hasAttribute("transform") == False:
+        #    print "no transform, getting parent...\n"
+        #    node = node.parentNode
+        #    if node.nodeType == Node.DOCUMENT_NODE:
+        #        print "at the root "
+        #        #pprint.pprint(node.toxml())
+        #        return x_trans, y_trans
+
+        #trans_str = node.attributes["transform"].value;
+        #tmp_str = trans_str.lstrip("translate(")
+        #tmp_str = tmp_str.rstrip(")")
+        #return map(lambda x: float(x), tmp_str.split(","))
+        return x_trans, y_trans
+
+    def get_trans(self, trans_str):
+        trans_str = trans_str.rstrip(")")
+        if "translate" in trans_str:
+            #print "translate! str = ", trans_str
+            trans_str = trans_str.lstrip("translate(")
+        else:
+            #print "not translate! str = ", trans_str
+            trans_str = trans_str.lstrip("matrix(")
+
+        values = trans_str.split(",")
+        return float(values[-2]), float(values[-1])
     
     def get_global_trans(self, trans_str):
         tmp_str = trans_str.lstrip("translate(")
@@ -330,6 +368,7 @@ Inkscape, which must be on the path for this script to work.
 
     def process_text(self, flowNode, imgWidth, imgHeight, g_x_trans, g_y_trans):
         #tmpstr = ''
+       
         style = flowNode.attributes["style"]
         color, fontSize, customColors, colorNum, mboxcode, fontSizeInt = self.process_style(style.value)
         put = Template('   \put($x,$y)')
@@ -375,6 +414,8 @@ Inkscape, which must be on the path for this script to work.
                 alltext += "\\textcolor" + color + "{" + fontSize + "{" + element.firstChild.data + "}}\\\\\n"
 
 # vskip -1cm
+        #print "text: " + alltext + " g_pos ", g_x_trans, g_y_trans
+        #print "\n"
         txt = Template('{\\rotatebox{' + `self.toDEG(rotate)` + '}{\makebox(0,0)[tl]{\strut{}{$text}}}}%\n')
         miniPg = '\n   \\begin{minipage}[h]{' + str(myWidth * 0.8) + 'pt}\\vspace{-2ex}\n'
         if mboxcode == 'c':
