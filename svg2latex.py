@@ -218,7 +218,7 @@ Inkscape, which must be on the path for this script to work.
         latexstr += " \\end{picture}\n"
         latexstr += "\\endgroup\n"
         
-        FILE.writelines(str(latexstr))
+        FILE.writelines(str(latexstr.encode("utf-8")))
         FILE.close()
 
 #####################################################################
