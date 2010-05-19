@@ -234,14 +234,21 @@ Inkscape, which must be on the path for this script to work.
 
     def get_trans(self, trans_str):
         trans_str = trans_str.rstrip(")")
+        x_trans = 1.0
+        y_trans = 1.0
         if "translate" in trans_str:
             #print "translate! str = ", trans_str
             trans_str = trans_str.lstrip("translate(")
+            values = trans_str.split(",")
         else:
             #print "not translate! str = ", trans_str
             trans_str = trans_str.lstrip("matrix(")
+            values = trans_str.split(",")
+            # fix the x,y if there is a scale value included in the matrix
+            #print "values = ", values[0], values[3]
+            #values[-2] = float(values[0]) * float(values[-2])
+            #values[-1] = float(values[3]) * float(values[-1])
 
-        values = trans_str.split(",")
         return float(values[-2]), float(values[-1])
     
     def get_global_trans(self, trans_str):
