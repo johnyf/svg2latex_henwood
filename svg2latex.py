@@ -315,24 +315,6 @@ Inkscape, which must be on the path for this script to work.
         return color, fontSize, customColors, colorNum, mboxcode, fontSizeFloat
 
 #####################################################################
-
-    def process_transform(self, transform):
-        rotate = 0
-        transX = 0
-        transY = 0
-        if transform is not None:
-            transArrTmp = re.split(r"[,\(\)]", transform)
-            transArr = []
-            for element in transArrTmp:
-                if re.search('^[-+]?\d+\.?\d*', element):
-                    transArr.append(element)
-            transX = float(transArr[-2])
-            transY = float(transArr[-1])
-            if re.match(r'^matrix', transform) is not None:
-                rotate = self.get_angle(transArr[0], transArr[2], transArr[1], transArr[3])
-        return rotate, transX, transY
-
-#####################################################################
     def process_tspan_transform(self, transform, tmpx, tmpy):
         rotate = 0
         transX = 0
@@ -434,7 +416,7 @@ Inkscape, which must be on the path for this script to work.
         rotate, transX, transY = (0.0, 0.0, 0.0)
         if flowNode.hasAttribute("transform"):
             transform = flowNode.attributes["transform"]
-            rotate, transX, transY = self.process_transform(transform.value)
+            rotate, transX, transY = self.process_tspan_transform(transform.value, 0.0, 0.0)
 
         for element in flowNode.getElementsByTagName("rect"):
             x1 =  (float(element.attributes["x"].value))# + g_x_trans + self.flow_x_offset 
@@ -458,6 +440,7 @@ Inkscape, which must be on the path for this script to work.
             if element.firstChild is not None:
                 alltext += "\\textcolor" + color + "{" + fontSize + "{" + element.firstChild.data + "}}\\\\\n"
 
+        #print alltext
         txt = Template('{\\rotatebox{' + `self.toDEG(rotate)` + '}{\makebox(0,0)[tl]{\strut{}{$text}}}}%\n')
         miniPg = '\n    \\begin{minipage}[h]{' + str(myWidth * 0.8) + 'pt}\n'
         if mboxcode == 'c':
