@@ -236,18 +236,18 @@ Inkscape, which must be on the path for this script to work.
         trans_str = trans_str.rstrip(")")
         x_trans = 1.0
         y_trans = 1.0
-        if "translate" in trans_str:
-            #print "translate! str = ", trans_str
-            trans_str = trans_str.lstrip("translate(")
+        if "scale" in trans_str:
+            trans_str = trans_str.lstrip("scale(")
             values = trans_str.split(",")
-        else:
-            #print "not translate! str = ", trans_str
+        elif "matrix" in trans_str:
             trans_str = trans_str.lstrip("matrix(")
             values = trans_str.split(",")
             # fix the x,y if there is a scale value included in the matrix
             #print "values = ", values[0], values[3]
             #values[-2] = float(values[0]) * float(values[-2])
             #values[-1] = float(values[3]) * float(values[-1])
+        else:
+            print "unknown translate string, ignoring: ", trans_str
 
         return float(values[-2]), float(values[-1])
     
@@ -341,8 +341,10 @@ Inkscape, which must be on the path for this script to work.
     def process_text(self, flowNode, imgWidth, imgHeight, g_x_trans, g_y_trans):
         #tmpstr = ''
        
-        style = flowNode.attributes["style"]
-        color, fontSize, customColors, colorNum, mboxcode, fontSizeInt = self.process_style(style.value)
+        color, fontSize, customColors, colorNum, mboxcode, fontSizeInt = self.process_style(None)
+        if flowNode.hasAttribute("style"):
+            style = flowNode.attributes["style"]
+            color, fontSize, customColors, colorNum, mboxcode, fontSizeInt = self.process_style(style.value)
         put = Template('   \put($x,$y)')
 
         rotate, transX, transY = (0.0, 0.0, 0.0)
