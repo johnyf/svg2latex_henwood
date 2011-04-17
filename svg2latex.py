@@ -246,6 +246,9 @@ Inkscape, which must be on the path for this script to work.
             #print "values = ", values[0], values[3]
             #values[-2] = float(values[0]) * float(values[-2])
             #values[-1] = float(values[3]) * float(values[-1])
+        elif "translate" in trans_str:
+            trans_str = trans_str.lstrip("translate(")
+            values = trans_str.split(",")
         else:
             print "unknown translate string, ignoring: ", trans_str
 
