@@ -364,7 +364,7 @@ Inkscape, which must be on the path for this script to work.
             rotate, transX, transY = self.process_tspan_transform(transform, 0.0, 0.0)
 
 
-        alltext = '' 
+        text_lines = list()
         (x2, y2) = (None, None)
         for element in flowNode.getElementsByTagName("tspan"):
             #x1 = (float(element.attributes["x"].value))
@@ -387,7 +387,12 @@ Inkscape, which must be on the path for this script to work.
             if element.hasAttribute("style"):
                 fontSize = self.get_fontsize(element.attributes["style"].value, fontSize)
             if element.firstChild is not None:
-                alltext += "\\textcolor" + color + "{" + fontSize + "{" + element.firstChild.data + "}}\\\\\n"
+                text_lines.append(element.firstChild.data)
+        s = ' '.join(text_lines)
+        alltext = '\\textcolor{color}{{ {fontsize} {{ {e} }} }}\\\\'.format(
+            color=color,
+            fontsize=fontSize,
+            e=s)
 
 # vskip -1cm
         #print "text: " + alltext + " g_pos ", g_x_trans, g_y_trans
